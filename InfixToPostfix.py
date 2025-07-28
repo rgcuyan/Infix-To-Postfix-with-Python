@@ -6,13 +6,12 @@ regex = r'^[0-9+\-*/^() ]+$'
 # Compilación del patrón de expresión regular hecha en VERBOSE para usarla varias veces y no compilarla cada vez
 patron = re.compile(regex, re.VERBOSE)
 
-#--------------------------------------------------------------------
-# Función para validar la cadena infix
+#-------------------------------FUNCION PARA VALIDAR UNA CADENA INFIX, VALIDA BALANCEO DE PARENTESIS, USO CORRECTO DE LOS SIGNOS Y QUE HAYAN VALORES NUMERICOS-------------------------------------
 def validar_expresion(expresion):
     
-    expresion = expresion.strip()       #Quita espacios en blanco al inicio y al final de la cadena
+    expresion = expresion.strip()#Quita espacios en blanco al inicio y al final de la cadena
 
-    if not patron.match(expresion):      # la funcion match verifica que la expresión cumpla con el patrón definido por la expresión regular (regex)
+    if not patron.match(expresion):# la funcion match verifica que la expresión cumpla con el patrón definido por la expresión regular (regex)
         return False
     
     # Validar balance de paréntesis:
@@ -48,29 +47,72 @@ def validar_expresion(expresion):
                 return False
     return True
 
-def infixToPostfix(expresion):
-    for variable in expresion:
-        print(variable)
 
-#Pruebas de la función
+
+def infixToPostfix(expresion):
+    
+    prioridad = {
+        '+':1, 
+        '-':1, 
+        '*':2, 
+        '/':2, 
+        '^':3
+        }
+    
+    salida = []
+    pila = []
+    tokens = expresion.split()
+
+    for token in tokens:
+        #print(token)
+        if token.isdigit():
+            salida.append(token)
+            #print(pila)
+        elif token == '(':
+            pila.append(token)
+        elif token == ')':
+            while pila and pila[-1] != '(':
+                salida.append(pila.pop())
+            pila.pop()
+        elif es_operador(token):  
+            while (pila and pila[-1] != '(' and prioridad[pila[-1]] >= prioridad[token]):
+                salida.append(pila.pop())
+            pila.append(token)
+        else:
+            raise ValueError(f"Token inválido: {token}")
+    
+    while pila:
+        salida.append(pila.pop())
+
+    return " ".join(salida)
+
+
+def es_operador(token):
+    return token in "+-*/^"
+
+
+'''#Pruebas de la función
 print(validar_expresion("3 + 4 * 2"))            # True
 print(validar_expresion("3 + + 4"))              # False (operadores consecutivos)
 print(validar_expresion("( 3 + 4 ) * 2"))        # True
 print(validar_expresion("3 + (4 * 2"))           # False (paréntesis no balanceados)
 print(validar_expresion("3 + a * 2"))            # False (caracter inválido)
 print(validar_expresion(" + 3 * 2"))             # False (operador al inicio)
-print(validar_expresion("3 * 2 -"))               # False (operador al final)
+print(validar_expresion("3 * 2 -"))               # False (operador al final)'''
 
-
-def es_operador(token):
-    return token in "+-*/^"
 
 #--------------------------------------------------------------------
 arregloExpresiones = []
+arregloPostfix = []
 with open("Expresiones.txt", "r", encoding="utf-8") as archivo:
     for linea in archivo:
         linea = linea.strip()
         if validar_expresion(linea) == True:
             arregloExpresiones.append(linea)
-            print(linea)
+            #print(linea)
+            arregloPostfix.append(infixToPostfix(arregloExpresiones.pop()))
+            print(f"Expresion: {linea}")
+            print(f"Postfix: {arregloPostfix[-1]}")
+            print()
+
 
