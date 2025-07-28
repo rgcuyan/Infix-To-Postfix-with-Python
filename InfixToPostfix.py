@@ -72,12 +72,12 @@ def infixToPostfix(expresion):
 
     for token in tokens:
         #print(token)
-        if token.isdigit():
+        if token.isdigit():     #Si es digito entonces lo guarda en la salida
             salida.append(token)
             #print(pila)
-        elif token == '(':
+        elif token == '(': #Si es parentesisi inicial entonces se mete en la pila
             pila.append(token)
-        elif token == ')':
+        elif token == ')':  #Si es 
             while pila and pila[-1] != '(':
                 salida.append(pila.pop())
             pila.pop()
