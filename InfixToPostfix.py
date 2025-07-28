@@ -7,6 +7,10 @@ regex = r'^[0-9+\-*/^() ]+$'
 patron = re.compile(regex, re.VERBOSE)
 
 #-------------------------------FUNCION PARA VALIDAR UNA CADENA INFIX, VALIDA BALANCEO DE PARENTESIS, USO CORRECTO DE LOS SIGNOS Y QUE HAYAN VALORES NUMERICOS-------------------------------------
+def tokenizar(expresion):
+    # Encuentra todos los números y operadores/paréntesis
+    return re.findall(r'\d+|[+\-*/^()]', expresion)
+
 def validar_expresion(expresion):
     
     expresion = expresion.strip()#Quita espacios en blanco al inicio y al final de la cadena
@@ -14,6 +18,8 @@ def validar_expresion(expresion):
     if not patron.match(expresion):# la funcion match verifica que la expresión cumpla con el patrón definido por la expresión regular (regex)
         return False
     
+    
+
     # Validar balance de paréntesis:
     balance = 0
     for c in expresion:
@@ -29,7 +35,8 @@ def validar_expresion(expresion):
         return False     # Al final debe de dar 0 para que los paréntesis estén balanceados
     
     # Validar operadores consecutivos o mal ubicados
-    tokens = expresion.split()
+    tokens = tokenizar(expresion) 
+    #tokens = expresion.split()
     operadores = "+-*/^"
     for i in range(len(tokens)):
         if tokens[i] in operadores:
@@ -61,7 +68,7 @@ def infixToPostfix(expresion):
     
     salida = []
     pila = []
-    tokens = expresion.split()
+    tokens = tokenizar(expresion) 
 
     for token in tokens:
         #print(token)
@@ -102,17 +109,50 @@ print(validar_expresion("3 * 2 -"))               # False (operador al final)'''
 
 
 #--------------------------------------------------------------------
+
+def evaluar_postfix(postfix):
+    pila = []
+    tokens = postfix.split()
+
+    for token in tokens:
+        if token.isdigit():
+            pila.append(float(token))
+        else:
+            if len(pila) < 2:
+                raise ValueError("Expresión inválida")
+            b = pila.pop()
+            a = pila.pop()
+
+            if token == '+':
+                pila.append(a + b)
+            elif token == '-':
+                pila.append(a - b)
+            elif token == '*':
+                pila.append(a * b)
+            elif token == '/':
+                if b == 0:
+                    raise ZeroDivisionError("División por cero")
+                pila.append(a / b)
+            elif token == '^':
+                pila.append(a ** b)
+            else:
+                raise ValueError(f"Operador no reconocido: {token}")
+    
+    if len(pila) != 1:
+        raise ValueError("Expresión inválida: operandos sobrantes")
+    return pila[0]
+
+
 arregloExpresiones = []
-arregloPostfix = []
 with open("Expresiones.txt", "r", encoding="utf-8") as archivo:
     for linea in archivo:
         linea = linea.strip()
         if validar_expresion(linea) == True:
             arregloExpresiones.append(linea)
             #print(linea)
-            arregloPostfix.append(infixToPostfix(arregloExpresiones.pop()))
+            resultadoPostfix = infixToPostfix(arregloExpresiones.pop())
+            resultado = evaluar_postfix(resultadoPostfix)
             print(f"Expresion: {linea}")
-            print(f"Postfix: {arregloPostfix[-1]}")
+            print(f"Postfix: {resultadoPostfix}")
+            print(f"Resultado: {resultado}\n")
             print()
-
-
